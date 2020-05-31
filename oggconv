@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# oggconv: converts any given audio file into ogg format.
+# Requires ffmpeg to be installed.
+
+# Usage: oggconv <input_file> <input_file2> ...
+# Output is automatically set to input_file{n}.ogg (it will be in the same folder
+# as the original file; the extension will be properly changed)
+
+command -v ffmpeg >/dev/null 2>&1 || \
+    { echo "This program requires ffmpeg to be installed." >&2; exit 1; }
+
+[ "$#" -eq 0 ] && { echo "oggconv: must provide a file(s)" >&2; exit 1; }
+
+for f in "$@"
+do
+    ffmpeg -i "$f" -acodec libvorbis "$(echo "$f" | sed -r "s/(.*)\.(\w+)/\1.ogg/")"
+done

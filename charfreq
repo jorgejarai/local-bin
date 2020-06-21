@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# charfreq: prints the frequency of every unique character in a string
+# provided as an argument
+
+# Usage: charfreq <string>
+
+[ "$#" -eq 0 ] && { echo "charfreq: must provide a string" >&2; exit 1; }
+
+printf "%s" "$*" | sed -r 's/ //g;s/([[:alnum:]])/\1 /g' \
+	| tr ' ' '\n' | tr '[:upper:]' '[:lower:]' | sort | uniq -c

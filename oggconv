@@ -14,5 +14,5 @@ command -v ffmpeg >/dev/null 2>&1 || \
 
 for f in "$@"
 do
-    ffmpeg -i "$f" -acodec libvorbis "$(echo "$f" | sed -r "s/(.*)\.(\w+)/\1.ogg/")"
+    ffmpeg -i "$f" -vn -acodec libvorbis "$(echo "$f" | sed -r "s/(.*)\.(\w+)/\1.ogg/")"
 done

@@ -29,7 +29,8 @@ def main():
     parser.add_argument('--title', help='the song\'s title', required=True)
     parser.add_argument('--album', help='the song\'s album')
     parser.add_argument('-r', action='store_true',
-                        help='renames the file in-place using the format \"Artist - Title\"')
+                        help='renames the file in-place by formatting it as \
+                        \"Artist - Title.ext\"')
 
     args = parser.parse_args()
     if not os.path.exists(args.file):

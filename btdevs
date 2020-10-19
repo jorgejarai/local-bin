@@ -20,29 +20,42 @@
 # preferred Bluetooth utility.
 
 import configparser
-from os.path import expanduser
+from os.path import expanduser, basename
 import re
 import subprocess
 import sys
 
 
 def usage():
-    print(f"usage: {sys.argv[0]} <action> <aliases>...", file=sys.stderr)
-    print("    <action>: c, conn, connect", file=sys.stderr)
-    print("              d, disc, disconnect", file=sys.stderr)
-    print("              s, stat, status", file=sys.stderr)
+    progname = basename(sys.argv[0])
+    print(f"usage: {progname} <action> <aliases>...", file=sys.stderr)
+    print("    <action>: c, conn, connect     : connect to device(s)",
+          file=sys.stderr)
+    print("              d, disc, disconnect  : disconnect from device(s)",
+          file=sys.stderr)
+    print("              s, stat, status      : check status of device(s)",
+          file=sys.stderr)
+    print("              on                   : turn controller on (no "
+          "aliases required)", file=sys.stderr)
+    print("              off                  : turn controller off (no "
+          "aliases required)", file=sys.stderr)
 
 
 def get_address(config, alias):
     try:
         return config["Devices"][alias]
     except KeyError:
+        progname = basename(sys.argv[0])
         print(
-            f"{sys.argv[0]}: device \"{alias}\" does not exist", file=sys.stderr)
+            f"{progname}: device \"{alias}\" does not exist", file=sys.stderr)
         return None
 
 
 def connect(config, devices):
+    if not devices:
+        usage()
+        sys.exit(1)
+
     for dev in devices:
         addr = get_address(config, dev)
 
@@ -51,6 +64,10 @@ def connect(config, devices):
 
 
 def disconnect(config, devices):
+    if not devices:
+        usage()
+        sys.exit(1)
+
     for dev in devices:
         addr = get_address(config, dev)
 
@@ -59,6 +76,10 @@ def disconnect(config, devices):
 
 
 def status(config, devices):
+    if not devices:
+        usage()
+        sys.exit(1)
+
     for dev in devices:
         addr = get_address(config, dev)
 
@@ -77,10 +98,20 @@ def status(config, devices):
                 print(f"Device \"{dev}\" ({addr}) is not connected")
 
 
+def power_on():
+    print("Turning Bluetooth controller on...")
+    subprocess.run(["bluetoothctl", "power", "on"])
+
+
+def power_off():
+    print("Turning Bluetooth controller off...")
+    subprocess.run(["bluetoothctl", "power", "off"])
+
+
 def main():
-    if len(sys.argv) <= 2:
+    if len(sys.argv) < 2:
         usage()
-        exit(1)
+        sys.exit(1)
 
     config = configparser.ConfigParser()
     config.read(f'{expanduser("~")}/.config/btdevs.conf')
@@ -92,10 +123,15 @@ def main():
         disconnect(config, sys.argv[2:])
     elif action == "s" or action == "stat" or action == "status":
         status(config, sys.argv[2:])
+    elif action == "on":
+        power_on()
+    elif action == "off":
+        power_off()
     else:
-        print(f"{sys.argv[0]}: invalid option \"{action}\"", file=sys.stderr)
+        progname = basename(sys.argv[0])
+        print(f"{progname}: invalid option \"{action}\"", file=sys.stderr)
         usage()
-        exit(1)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

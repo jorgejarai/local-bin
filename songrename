@@ -41,7 +41,7 @@ def main():
     change_metadata(args.file, args.artist, args.title, args.album)
 
     if args.r:
-        location = os.path.dirname(args.file) + '/'
+        location = os.path.dirname(os.path.abspath(args.file)) + '/'
         extension = os.path.splitext(args.file)[1]
 
         os.rename(args.file, location +

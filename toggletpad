@@ -5,9 +5,10 @@
 
 # Usage: toggletpad
 
-idd=$(xinput --list | grep 'SynPS/2 Synaptics TouchPad' | awk '{print $6}'| cut -d'=' -f2)
+idd=$(xinput --list | grep 'SynPS/2 Synaptics TouchPad' | awk '{print $6}' |
+  cut -d'=' -f2)
 
-TPAD_STATUS=$(xinput list-props "$idd" | sed -En '/\(165\)/p' \
+TPAD_STATUS=$(xinput list-props "$idd" | sed -En '/\(173\)/p' \
     | awk '{ print substr($0, length, 1)}')
 
 case "$TPAD_STATUS" in

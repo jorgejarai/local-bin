@@ -1,12 +1,19 @@
 #!/usr/bin/env python3
 
-# btdevs: a wrapper for bluetoothctl that allows to connect/disconnect
+# btdevs: a wrapper around bluetoothctl that allows to connect/disconnect
 # Bluetooth devices by using an alias.
 
 # Usage: btdevs <action> <aliases>...
-#               <action>: c, conn, connnect
-#                         d, disc, disconnect
-#                         s, stat, status
+#               <action>: c, conn, connect     : connect to device
+#                         d, disc, disconnect  : disconnect from device
+#                         s, stat, status      : check status of device
+#                         t, togg, toggle      : toggle state of device
+#                                                from connected to
+#                                                disconnected and viceversa
+#                         on                   : turn controller on (no aliases
+#                                                required)
+#                         off                  : turn controller off (no
+#                                                aliases required)
 
 # Aliases are saved in the file ~/.config/btdevs.conf using the
 # following format:
@@ -29,11 +36,15 @@ import sys
 def usage():
     progname = basename(sys.argv[0])
     print(f"usage: {progname} <action> <aliases>...", file=sys.stderr)
-    print("    <action>: c, conn, connect     : connect to device(s)",
+    print("    <action>: c, conn, connect     : connect to device",
           file=sys.stderr)
-    print("              d, disc, disconnect  : disconnect from device(s)",
+    print("              d, disc, disconnect  : disconnect from device",
           file=sys.stderr)
-    print("              s, stat, status      : check status of device(s)",
+    print("              s, stat, status      : check status of device",
+          file=sys.stderr)
+    print("              t, togg, toggle      : toggle state of device"
+          "from connected", file=sys.stderr)
+    print("                                     to disconnected and viceversa",
           file=sys.stderr)
     print("              on                   : turn controller on (no "
           "aliases required)", file=sys.stderr)
@@ -51,51 +62,45 @@ def get_address(config, alias):
         return None
 
 
-def connect(config, devices):
-    if not devices:
+def connect(config, device):
+    if not device:
         usage()
         sys.exit(1)
 
-    for dev in devices:
-        addr = get_address(config, dev)
+    addr = get_address(config, device)
 
-        if addr:
-            subprocess.run(["bluetoothctl", "connect", addr])
+    if addr:
+        subprocess.run(["bluetoothctl", "connect", addr])
 
 
-def disconnect(config, devices):
-    if not devices:
+def disconnect(config, device):
+    if not device:
         usage()
         sys.exit(1)
 
-    for dev in devices:
-        addr = get_address(config, dev)
+    addr = get_address(config, device)
 
-        if addr:
-            subprocess.run(["bluetoothctl", "disconnect", addr])
+    if addr:
+        subprocess.run(["bluetoothctl", "disconnect", addr])
 
 
-def status(config, devices):
-    if not devices:
+def status(config, device):
+    if not device:
         usage()
         sys.exit(1)
 
-    for dev in devices:
-        addr = get_address(config, dev)
+    addr = get_address(config, device)
 
-        if addr == None:
-            continue
-
-        output = subprocess.run(
+    output = subprocess.run(
             ["bluetoothctl", "info", addr], capture_output=True).stdout
-        output = output.decode("utf-8").split("\n")
+    output = output.decode("utf-8").split("\n")
 
-        for line in output:
-            res = re.match("\s*Connected: (yes|no)$", line)
-            if res and res.group(1) == "yes":
-                print(f"Device \"{dev}\" ({addr}) is connected")
-            elif res and res.group(1) == "no":
-                print(f"Device \"{dev}\" ({addr}) is not connected")
+    for line in output:
+        res = re.match("[[:space:]]*Connected: (yes|no)$", line)
+        if res and res.group(1) == "yes":
+            return True
+        elif res and res.group(1) == "no":
+            return False
 
 
 def power_on():
@@ -117,24 +122,51 @@ def main():
     config.read(f'{expanduser("~")}/.config/btdevs.conf')
 
     action = sys.argv[1]
-    if action == "c" or action == "conn" or action == "connect":
-        connect(config, sys.argv[2:])
-    elif action == "d" or action == "disc" or action == "disconnect":
-        disconnect(config, sys.argv[2:])
-    elif action == "s" or action == "stat" or action == "status":
-        status(config, sys.argv[2:])
+    if action in ("c", "conn", "connect"):
+        if len(sys.argv) != 3:
+            usage()
+            sys.exit(1)
+
+        connect(config, sys.argv[2])
+    elif action in ("d", "disc", "disconnect"):
+        if len(sys.argv) != 2:
+            usage()
+            sys.exit(1)
+
+        disconnect(config, sys.argv[2])
+    elif action in ("s", "stat", "status"):
+        if len(sys.argv) != 3:
+            usage()
+            sys.exit(1)
+
+        if status(config, sys.argv[2]):
+            print(f"Device `{sys.argv[2]}'"
+                  " ({get_address(config, sys.argv[2])}) is connected")
+        else:
+            print(f"Device `{sys.argv[2]}'"
+                  " ({get_address(config, sys.argv[2])}) is not connected")
+    elif action in ("t", "togg", "toggle"):
+        if len(sys.argv) != 3:
+            usage()
+            sys.exit(1)
+
+        if status(config, sys.argv[2]):
+            disconnect(config, sys.argv[2])
+        else:
+            connect(config, sys.argv[2])
+
+        print(f"Toggling the state of device `{sys.argv[2]}'"
+              " ({get_address(config, sys.argv[2])})...")
     elif action == "on":
         power_on()
     elif action == "off":
         power_off()
     else:
         progname = basename(sys.argv[0])
-        print(f"{progname}: invalid option \"{action}\"", file=sys.stderr)
+        print(f"{progname}: invalid option `{action}'", file=sys.stderr)
         usage()
         sys.exit(1)
 
 
 if __name__ == "__main__":
     main()
-
-# vim: set syntax=python

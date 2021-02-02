@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+
+# uuidv4: generates a random UUIDv4 and copies it into the clipboard
+
+import uuid
+import pyperclip
+
+def main():
+    ret = uuid.uuid4()
+    pyperclip.copy(str(ret))
+    print('UUIDv4 copied into clipboard')
+
+if __name__ == "__main__":
+    main()

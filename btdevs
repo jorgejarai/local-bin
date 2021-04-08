@@ -96,7 +96,7 @@ def status(config, device):
     output = output.decode("utf-8").split("\n")
 
     for line in output:
-        res = re.match("[[:space:]]*Connected: (yes|no)$", line)
+        res = re.match("\\s*Connected: (yes|no)$", line)
         if res and res.group(1) == "yes":
             return True
         elif res and res.group(1) == "no":
@@ -141,10 +141,10 @@ def main():
 
         if status(config, sys.argv[2]):
             print(f"Device `{sys.argv[2]}'"
-                  " ({get_address(config, sys.argv[2])}) is connected")
+                  f" ({get_address(config, sys.argv[2])}) is connected")
         else:
             print(f"Device `{sys.argv[2]}'"
-                  " ({get_address(config, sys.argv[2])}) is not connected")
+                  f" ({get_address(config, sys.argv[2])}) is not connected")
     elif action in ("t", "togg", "toggle"):
         if len(sys.argv) != 3:
             usage()
@@ -156,7 +156,7 @@ def main():
             connect(config, sys.argv[2])
 
         print(f"Toggling the state of device `{sys.argv[2]}'"
-              " ({get_address(config, sys.argv[2])})...")
+              f" ({get_address(config, sys.argv[2])})...")
     elif action == "on":
         power_on()
     elif action == "off":

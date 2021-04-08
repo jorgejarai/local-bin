@@ -8,7 +8,7 @@
 idd=$(xinput --list | grep 'SynPS/2 Synaptics TouchPad' | awk '{print $6}' |
   cut -d'=' -f2)
 
-TPAD_STATUS=$(xinput list-props "$idd" | sed -En '/\(173\)/p' \
+TPAD_STATUS=$(xinput list-props "$idd" | sed -En '/Device Enabled/p' \
     | awk '{ print substr($0, length, 1)}')
 
 case "$TPAD_STATUS" in
@@ -16,5 +16,5 @@ case "$TPAD_STATUS" in
         notify-send -t 1000 "Touchpad is now disabled" ;;
     "0") xinput set-prop "$idd" "Device Enabled" 1 && \
         notify-send -t 1000 "Touchpad is now enabled" ;;
-	*) notify-send -t 1000 "There was an error toggling the touchpad" && exit 1 ;;
+    *) notify-send -t 1000 "There was an error toggling the touchpad" && exit 1 ;;
 esac

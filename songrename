@@ -1,9 +1,22 @@
 #!/usr/bin/env python3
 
+# songrename: Changes metadata of a music file and renames it if desired.
+
+# Usage: songrename [-r] <file> --title <title> --artist <artist>
+#   [--album <album>]
+
+# -r: Renames <file> following the format `<artist> - <title>.<extension>'
+# --title <title>: Title of the song
+# --artist <artist>: Artist who played the song
+# --album <album>: Album of the song (optional)
+
+# This program requires kid3-cli to be installed.
+
 import argparse
 import os
 import sys
 import subprocess
+import shutil
 
 
 def change_metadata(filename, artist, title, album):
@@ -22,6 +35,11 @@ def change_metadata(filename, artist, title, album):
 
 
 def main():
+    if not shutil.which("kid3-cli"):
+        print('This program requires kid3-cli to be installed.',
+                file=sys.stderr)
+        sys.exit(1)
+
     parser = argparse.ArgumentParser(
         description='Change a music file metadata and rename it if desired.')
     parser.add_argument('file', type=str, help='a music file')

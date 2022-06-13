@@ -1,0 +1,10 @@
+#!/bin/sh
+
+# reposize: prints the size of a given GitHub repository
+
+# Usage : reposize <repo>
+#         <repo> must be in format `user/repo_name`
+
+[ "$#" -eq 0 ] && { printf "%s: must provide an argument\n" $0 >&2; exit 1; }
+
+curl -s https://api.github.com/repos/$1 | jq '.size' | numfmt --to=iec --from-unit=1024

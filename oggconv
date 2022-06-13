@@ -10,7 +10,7 @@
 command -v ffmpeg >/dev/null 2>&1 || \
     { echo "This program requires ffmpeg to be installed." >&2; exit 1; }
 
-[ "$#" -eq 0 ] && { echo "oggconv: must provide a file(s)" >&2; exit 1; }
+[ "$#" -eq 0 ] && { printf "%s: must provide a file(s)\n" $0 >&2; exit 1; }
 
 for f in "$@"
 do
